@@ -45,6 +45,8 @@ class S3ContentModel(S3Model):
     names = ["cms_series",
              "cms_post",
              "cms_comment",
+             "cms_keywords",
+             "cms_resource_keywords"
              ]
 
     def model(self):
@@ -238,6 +240,48 @@ class S3ContentModel(S3Model):
         # ---------------------------------------------------------------------
         # Pass variables back to global scope (response.s3.*)
         #
+
+
+        # ---------------------------------------------------------------------
+        # Keywords
+
+        tablename = "cms_keywords"
+        table = define_table(tablename,
+                             Field("keyword", "text",
+                                   notnull=True,)
+                             *meta_fields())
+
+        # Resource Configuration
+        configure(tablename,
+                  list_fields=["id",
+                               "keyword_id",
+                               "keyword",
+                               "created_by",
+                               "modified_on"
+                               ])
+
+        # ---------------------------------------------------------------------
+        # Keyword Tag - Used to tag a keyword to a resource
+        
+         tablename = "cms_resource_keyword"
+         table = self.define_table(tablename,
+                                   Field("keyword"),
+                                   Field("keyword_id", "reference cms_keyword",
+                                    requires = IS_ONE_OF(db,"cms_keyword.id")),
+                                   Field("resource"),
+                                   Field("record_uuid",
+                                         type=s3uuid,
+                                         length=128),
+                                   *s3.meta_fields())
+
+         self.configure(tablename,
+                        list_fields=[ "id",
+                                      "keyword"
+                                      "keyword_id",
+                                      "record_uuid",
+                                      "resource",
+                                     ])
+
         return Storage()
 
     # -------------------------------------------------------------------------
